@@ -7,8 +7,11 @@ import (
 )
 
 func formHandler(responseWriter http.ResponseWriter, request *http.Request) {
-	if error := request.ParseForm(); error != nil {
-		fmt.Fprintf(responseWriter, "ParseForm() error: %v", error)
+	if err := request.ParseForm(); err != nil {
+		_, err := fmt.Fprintf(responseWriter, "ParseForm() err: %v", err)
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -16,12 +19,21 @@ func formHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	reason := request.FormValue("reason")
 
 	if name == "" || reason == "" {
-		fmt.Fprintf(responseWriter, "REJECTED!")
+		_, err := fmt.Fprintf(responseWriter, "REJECTED!")
+		if err != nil {
+			return
+		}
 		return
 	}
 
-	fmt.Fprintf(responseWriter, "WELCOME!\n%s You've successfully apply to the Goddess Makima Fan Club!\n", name)
-	fmt.Fprintf(responseWriter, "Your reason to join \"%s\" shall be embraced by our Goddess", reason)
+	_, err := fmt.Fprintf(responseWriter, "WELCOME!\n%s You've successfully apply to the Goddess Makima Fan Club!\n", name)
+	if err != nil {
+		return
+	}
+	_, err = fmt.Fprintf(responseWriter, "Your reason to join \"%s\" shall be embraced by our Goddess", reason)
+	if err != nil {
+		return
+	}
 }
 
 func main() {
@@ -30,7 +42,7 @@ func main() {
 	http.HandleFunc("/form", formHandler)
 
 	fmt.Printf("Starting server at port 8080\n")
-	if error := http.ListenAndServe(":8080", nil); error != nil {
-		log.Fatal(error)
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatal(err)
 	}
 }
